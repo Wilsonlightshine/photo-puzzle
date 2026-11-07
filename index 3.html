@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Photo Slide Puzzle</title>
+<style>
+:root{--ink:#1b1260;--gold:#ffc928;--font:"Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{margin:0;height:100%;overflow:hidden;font-family:var(--font);font-weight:800}
+body{background:linear-gradient(160deg,#a21cf0 0%,#5b4cf0 45%,#12a8ff 100%);color:#fff}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;gap:2.2vh;padding:calc(env(safe-area-inset-top) + 2vh) 5vw calc(env(safe-area-inset-bottom) + 2vh)}
+.screen.on{display:flex}
+h1{margin:0;font-size:9vw;line-height:1;text-align:center;color:var(--gold);text-shadow:0 .6vw 0 #3a1a8a,0 0 2vw #3a1a8a}
+h1 small{display:block;color:#fff;font-size:7vw}
+.btn{width:100%;max-width:480px;border:0;border-radius:99px;padding:2.2vh 4vw;font:inherit;font-size:5.4vw;color:#fff;
+ display:flex;align-items:center;justify-content:center;gap:3vw;cursor:pointer;
+ background:linear-gradient(#7be34b,#1fae2a);box-shadow:inset 0 .6vh 0 rgba(255,255,255,.45),0 .8vh 0 #137a1b,0 1.6vh 2.4vh rgba(0,0,0,.3);text-shadow:0 .3vh 0 rgba(0,0,0,.3)}
+.btn:active{transform:translateY(.6vh)}
+.btn.or{background:linear-gradient(#ffc044,#f58a00);color:var(--ink);box-shadow:inset 0 .6vh 0 rgba(255,255,255,.5),0 .8vh 0 #b35f00,0 1.6vh 2.4vh rgba(0,0,0,.3);text-shadow:none}
+.btn.pu{background:linear-gradient(#c15cff,#7a1fd0);box-shadow:inset 0 .6vh 0 rgba(255,255,255,.4),0 .8vh 0 #50128f,0 1.6vh 2.4vh rgba(0,0,0,.3)}
+.btn.bl{background:linear-gradient(#4db4ff,#1c5fe0);box-shadow:inset 0 .6vh 0 rgba(255,255,255,.4),0 .8vh 0 #123f9e,0 1.6vh 2.4vh rgba(0,0,0,.3)}
+.btn svg{width:7vw;height:7vw;flex:none}
+.chips{display:flex;gap:3vw;width:100%;max-width:480px}
+.chip{flex:1;border:.5vw solid #8d6bff;border-radius:99px;background:#e9e8ff;color:var(--ink);font:inherit;font-size:5vw;padding:1.2vh 0;line-height:1.1;cursor:pointer;box-shadow:0 .7vh 0 #6a56c8}
+.chip small{display:block;font-size:3.6vw}
+.chip.sel{background:linear-gradient(#ffe066,#ffb300);border-color:#ffb300;box-shadow:0 .7vh 0 #b27a00}
+.card{background:#fff;border-radius:5vw;padding:1.6vw;box-shadow:0 1.4vh 3vh rgba(30,10,100,.45)}
+.board{touch-action:none;position:relative;width:min(88vw,52vh);aspect-ratio:1;border-radius:3vw;background:#1c1b5e;overflow:hidden}
+.tile{position:absolute;background-repeat:no-repeat;transition:transform .16s ease;cursor:pointer}
+.bar{display:flex;width:100%;max-width:480px;gap:3vw;align-items:center}
+.pill{flex:1;background:rgba(40,10,110,.65);border-radius:99px;padding:1vh 4vw;display:flex;flex-direction:column;font-size:3.6vw;line-height:1.15}
+.pill b{color:var(--gold);font-size:6.4vw}
+.round{width:13vw;height:13vw;border-radius:50%;border:0;background:linear-gradient(#4db4ff,#1c5fe0);box-shadow:0 .7vh 0 #123f9e;display:flex;align-items:center;justify-content:center;color:#fff;font-size:6vw;font:inherit;cursor:pointer}
+.thumb{cursor:pointer;width:26vw;height:26vw;border-radius:3vw;border:.8vw solid #fff;background-size:cover;box-shadow:0 1vh 2vh rgba(0,0,0,.35)}
+.row{display:flex;gap:3vw;width:100%;max-width:480px;margin-top:auto}
+.row .btn{font-size:4.6vw;flex-direction:column;gap:.4vh;padding:1.6vh 1vw}
+.crop{position:relative;width:min(90vw,56vh);height:min(90vw,56vh);display:flex;align-items:center;justify-content:center;touch-action:none}
+.crop canvas{max-width:100%;max-height:100%;display:block}
+#frame{position:absolute;border:.8vw solid #fff;box-shadow:0 0 0 100vmax rgba(20,0,80,.45);touch-action:none;
+ background:linear-gradient(#fff9 1px,#0000 1px) 0 0/33.333% 33.333%,linear-gradient(90deg,#fff9 1px,#0000 1px) 0 0/33.333% 33.333%}
+#frame i{position:absolute;width:9vw;height:9vw;border-radius:50%;background:#1a8cff;border:.9vw solid #fff;touch-action:none}
+.sub{font-size:4.4vw;text-align:center;margin:0}.sub small{display:block;color:#d8ccff;font-size:3.6vw}
+.stars{font-size:15vw;color:var(--gold);text-shadow:0 .8vh 0 #b27a00;letter-spacing:1vw}
+.stats{width:100%;max-width:480px;display:flex;background:#fff3d6;border-radius:5vw;padding:1.4vh 0;color:var(--ink);text-align:center;font-size:3.8vw;box-shadow:0 .8vh 0 #d2a24a}
+.stats div{flex:1}.stats b{display:block;font-size:8vw}
+.overlay{position:absolute;inset:0;background:rgba(20,0,80,.85);display:none;flex-direction:column;align-items:center;justify-content:center;gap:3vh;z-index:5}
+.overlay.on{display:flex}
+.prev{width:min(88vw,60vh);aspect-ratio:1;background-size:cover;border-radius:3vw;border:1vw solid #fff}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<section id="home" class="screen on">
+ <h1>Photo<small>Slide Puzzle</small></h1>
+ <div class="card"><div class="board" id="homeBoard" style="width:min(72vw,36vh)"></div></div>
+ <button class="btn or" id="bGallery"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="M4 18l5-5 4 4 3-3 4 4"/></svg>Upload from Gallery</button>
+ <button class="btn" id="bCamera"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.6"/></svg>Take a Photo</button>
+ <button class="btn pu" id="bSample"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4l13 8-13 8z"/></svg>Play Sample Photo</button>
+ <div class="chips" data-chips>
+  <button class="chip sel" data-n="3">Easy</button>
+  <button class="chip" data-n="4">Normal</button>
+  <button class="chip" data-n="5">Hard</button>
+ </div>
+ <input type="file" id="fileG" accept="image/*" hidden>
+ <input type="file" id="fileC" accept="image/*" capture="environment" hidden>
+</section>
+
+<!-- CROP -->
+<section id="cropS" class="screen">
+ <div class="bar"><button class="round" id="cBack" aria-label="Back">&#8592;</button><h1 style="font-size:7vw;flex:1;color:#fff;text-shadow:none">Select <span style="color:var(--gold)">Photo Area</span></h1><button class="round" id="bTick" aria-label="Crop" style="background:linear-gradient(#7be34b,#1fae2a);box-shadow:0 .7vh 0 #137a1b">&#10003;</button></div>
+ <p class="sub" id="cropHint">Drag the square to move it, drag a corner to resize<small>Tap &#10003; when the area looks right</small></p>
+ <div class="crop" id="cropBox"><canvas id="cropCv"></canvas><div id="cropRes" class="prev" style="display:none"></div><div id="frame"><i style="left:-5vw;top:-5vw"></i><i style="right:-5vw;top:-5vw"></i><i style="left:-5vw;bottom:-5vw"></i><i style="right:-5vw;bottom:-5vw"></i></div></div>
+ <div id="step2" style="display:none;margin-top:auto;width:100%;max-width:480px;flex-direction:column;gap:2.2vh;align-items:center">
+  <div class="chips" data-chips>
+   <button class="chip sel" data-n="3">Easy</button><button class="chip" data-n="4">Normal</button><button class="chip" data-n="5">Hard</button>
+  </div>
+  <button class="btn" id="bStart"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4l13 8-13 8z"/></svg>Start Puzzle</button>
+ </div>
+</section>
+
+<!-- GAME -->
+<section id="game" class="screen">
+ <div class="bar">
+  <div class="pill">Moves<b id="mv">0</b></div>
+  <div class="pill">Time<b id="tm">00:00</b></div>
+  <button class="round" id="bPause" aria-label="Pause">&#10074;&#10074;</button>
+ </div>
+ <div class="thumb" id="thumb"></div>
+ <div class="card"><div class="board" id="board"></div></div>
+ <div class="row">
+  <button class="btn bl" id="bHome">&#8962;<span>Home</span></button>
+  <button class="btn" id="bShuf">&#128256;<span>Shuffle</span></button>
+ </div>
+ <div class="overlay" id="pauseO"><h1>Paused</h1><button class="btn" id="bResume" style="width:70vw">Resume</button></div>
+ <div class="overlay" id="prevO"><div class="prev" id="prevImg"></div><p class="sub">Tap anywhere to close</p></div>
+</section>
+
+<!-- WIN -->
+<section id="win" class="screen">
+ <div class="stars" id="stars"></div>
+ <h1>Puzzle<small style="font-size:9vw;color:var(--gold)">Solved!</small></h1>
+ <div class="card" style="box-shadow:0 0 5vh #ffd54a"><div class="board won" id="winBoard" style="width:min(72vw,34vh)"></div></div>
+ <div class="stats"><div>Moves<b id="wMv">0</b></div><div>Time<b id="wTm">0</b></div><div>Best<b id="wBest">0</b></div></div>
+ <button class="btn" id="bAgain">&#10227; Play Again</button>
+ <button class="btn bl" id="bNew">New Photo</button>
+ <button class="btn pu" id="bHome2">Home</button>
+</section>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+let N=3, img=null, picURL='', st=null, timer=null, busy=false;
+const show=id=>{$$('.screen').forEach(s=>s.classList.toggle('on',s.id===id))};
+const fmt=s=>String(s/60|0).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+
+/* sample picture drawn on canvas (works offline) */
+function samplePic(){
+ const c=document.createElement('canvas');c.width=c.height=600;const g=c.getContext('2d');
+ let k=g.createLinearGradient(0,0,0,360);k.addColorStop(0,'#2a8cff');k.addColorStop(1,'#bfe6ff');g.fillStyle=k;g.fillRect(0,0,600,600);
+ g.fillStyle='#fff';[[90,70,60],[420,110,70],[300,50,45]].forEach(([x,y,r])=>{g.beginPath();g.arc(x,y,r,0,7);g.arc(x+r*.8,y+8,r*.7,0,7);g.arc(x-r*.8,y+10,r*.6,0,7);g.fill()});
+ g.fillStyle='#5f86b5';g.beginPath();g.moveTo(0,330);g.lineTo(170,130);g.lineTo(300,300);g.lineTo(420,170);g.lineTo(600,330);g.fill();
+ g.fillStyle='#fff';g.beginPath();g.moveTo(170,130);g.lineTo(130,190);g.lineTo(215,190);g.fill();
+ g.fillStyle='#2e8b3a';g.fillRect(0,320,600,60);
+ for(let i=0;i<14;i++){const x=i*45+10;g.fillStyle='#14612a';g.beginPath();g.moveTo(x,260+(i%3)*20);g.lineTo(x-22,350);g.lineTo(x+22,350);g.fill()}
+ g.fillStyle='#8a4b1c';g.fillRect(380,290,130,70);g.fillStyle='#5a2d10';g.beginPath();g.moveTo(370,292);g.lineTo(445,245);g.lineTo(520,292);g.fill();
+ g.fillStyle='#ffd34d';[400,432,464].forEach(x=>g.fillRect(x,310,20,24));
+ k=g.createLinearGradient(0,380,0,600);k.addColorStop(0,'#3aa5e8');k.addColorStop(1,'#1b6fb8');g.fillStyle=k;g.fillRect(0,380,600,220);
+ g.fillStyle='#ffffff30';for(let i=0;i<9;i++)g.fillRect(40+i*60,400+(i%4)*40,40,4);
+ const fl=['#ff4f9a','#ffd93d','#b06cff'];for(let i=0;i<40;i++){g.fillStyle=fl[i%3];g.beginPath();g.arc((i*83)%600,540+(i*37)%60,10+(i%3)*3,0,7);g.fill()}
+ return c.toDataURL('image/jpeg',.9);
+}
+const SAMPLE=samplePic();
+function drawTiles(el,url,n,cells){ // cells: array of tile ids in order
+ el.innerHTML='';
+ cells.forEach((id,i)=>{const t=document.createElement('div');t.className='tile';const s=100/n;
+  t.style.cssText=`width:${s}%;height:${s}%;left:${(i%n)*s}%;top:${(i/n|0)*s}%;background-image:url(${url});background-size:${n*100}% ${n*100}%;background-position:${n>1?(id%n)*100/(n-1):0}% ${n>1?(id/n|0)*100/(n-1):0}%`;
+  el.appendChild(t)});
+}
+function homePreview(){const c=[...Array(9).keys()];drawTiles($('#homeBoard'),SAMPLE,3,c);$('#homeBoard').lastChild.style.visibility='hidden'}
+homePreview();
+
+/* difficulty chips (home + crop stay in sync) */
+$$('[data-chips] .chip').forEach(b=>b.onclick=()=>{N=+b.dataset.n;$$('[data-chips] .chip').forEach(x=>x.classList.toggle('sel',+x.dataset.n===N))});
+
+/* picking a photo */
+$('#bGallery').onclick=()=>$('#fileG').click();
+$('#bCamera').onclick=()=>$('#fileC').click();
+[$('#fileG'),$('#fileC')].forEach(f=>f.onchange=e=>{const file=e.target.files[0];if(!file)return;const r=new FileReader();r.onload=()=>openCrop(r.result);r.readAsDataURL(file);f.value=''});
+$('#bSample').onclick=()=>{picURL=SAMPLE;startGame()};
+
+/* crop */
+let fr={x:0,y:0,s:0}, cw=0, ch=0;
+function openCrop(url){
+ const im=new Image();im.onload=()=>{img=im;show('cropS');
+  const box=$('#cropBox'),maxW=box.clientWidth,maxH=box.clientHeight,sc=Math.min(maxW/im.width,maxH/im.height);
+  const cv=$('#cropCv');cw=cv.width=Math.round(im.width*sc);ch=cv.height=Math.round(im.height*sc);
+  cv.getContext('2d').drawImage(im,0,0,cw,ch);
+  const s=Math.min(cw,ch);fr={x:(cw-s)/2,y:(ch-s)/2,s};cropStep(1);placeFrame()};
+ im.src=url}
+function placeFrame(){const cv=$('#cropCv'),f=$('#frame');
+ f.style.width=f.style.height=fr.s+'px';f.style.left=(cv.offsetLeft+fr.x)+'px';f.style.top=(cv.offsetTop+fr.y)+'px'}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+let drag=null;
+$('#frame').addEventListener('pointerdown',e=>{e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);
+ drag={corner:e.target.tagName==='I',px:e.clientX,py:e.clientY,f:{...fr}}});
+$('#frame').addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.px,dy=e.clientY-drag.py;
+ if(drag.corner){const cx=drag.f.x+drag.f.s/2,cy=drag.f.y+drag.f.s/2;
+  const r=e.target.getBoundingClientRect(),fb=$('#frame').getBoundingClientRect();
+  const mx=e.clientX-(fb.left+fb.width/2),my=e.clientY-(fb.top+fb.height/2);
+  let s=2*Math.max(Math.abs(mx),Math.abs(my));s=clamp(s,60,Math.min(cw,ch));
+  fr.s=s;fr.x=clamp(cx-s/2,0,cw-s);fr.y=clamp(cy-s/2,0,ch-s)}
+ else{fr.x=clamp(drag.f.x+dx,0,cw-fr.s);fr.y=clamp(drag.f.y+dy,0,ch-fr.s)}
+ placeFrame()});
+['pointerup','pointercancel'].forEach(t=>$('#frame').addEventListener(t,()=>drag=null));
+function cropStep(n){const two=n===2;
+ $('#cropCv').style.display=$('#frame').style.display=two?'none':'';$('#cropRes').style.display=two?'block':'none';
+ $('#bTick').style.display=two?'none':'flex';$('#step2').style.display=two?'flex':'none';
+ $('#cropHint').innerHTML=two?'Choose a level, then start<small>Your photo is ready</small>':'Drag the square to move it, drag a corner to resize<small>Tap &#10003; when the area looks right</small>'}
+$('#cBack').onclick=()=>{if($('#step2').style.display==='flex')cropStep(1);else show('home')};
+$('#bTick').onclick=()=>{const k=img.width/cw,o=document.createElement('canvas');o.width=o.height=720;
+ o.getContext('2d').drawImage(img,fr.x*k,fr.y*k,fr.s*k,fr.s*k,0,0,720,720);picURL=o.toDataURL('image/jpeg',.88);
+ $('#cropRes').style.backgroundImage=`url(${picURL})`;cropStep(2)};
+$('#bStart').onclick=startGame;
+
+/* swipe on tiles (small movement = tap) */
+let sw=null;const bd=$('#board');
+function swipe(id,d){const e=st.a.indexOf(N*N-1),p=st.a.indexOf(id),er=e/N|0,ec=e%N,pr=p/N|0,pc=p%N;
+ if((d==='R'&&er===pr&&ec>pc)||(d==='L'&&er===pr&&ec<pc)||(d==='D'&&ec===pc&&er>pr)||(d==='U'&&ec===pc&&er<pr))tap(id)}
+bd.addEventListener('pointermove',e=>{if(!sw)return;const dx=e.clientX-sw.x,dy=e.clientY-sw.y;
+ if(Math.max(Math.abs(dx),Math.abs(dy))<12)return;const id=sw.id;sw=null;swipe(id,Math.abs(dx)>Math.abs(dy)?(dx>0?'R':'L'):(dy>0?'D':'U'))});
+['pointerup','pointercancel'].forEach(t=>bd.addEventListener(t,()=>{if(sw){const id=sw.id;sw=null;tap(id)}}));
+/* game */
+function startGame(){
+ show('game');$('#thumb').style.backgroundImage=`url(${picURL})`;$('#prevImg').style.backgroundImage=`url(${picURL})`;
+ newRound()}
+function newRound(){
+ const total=N*N,solved=[...Array(total).keys()];let a=solved.slice(),e=total-1,last=-1;
+ for(let i=0;i<N*N*40;i++){const nb=[];const r=e/N|0,c=e%N;
+  if(r>0)nb.push(e-N);if(r<N-1)nb.push(e+N);if(c>0)nb.push(e-1);if(c<N-1)nb.push(e+1);
+  const opts=nb.filter(x=>x!==last),m=opts[Math.random()*opts.length|0];[a[e],a[m]]=[a[m],a[e]];last=e;e=m}
+ if(a.every((v,i)=>v===i)){[a[0],a[1]]=[a[1],a[0]];[a[0],a[1]]=[a[1],a[0]];return newRound()}
+ st={a,moves:0,secs:0,t0:Date.now(),paused:false};busy=false;
+ const b=$('#board');b.classList.remove('won');drawTiles(b,picURL,N,solved);
+ [...b.children].forEach((t,id)=>{t.dataset.id=id;t.onpointerdown=e=>{sw={id,x:e.clientX,y:e.clientY}}});
+ b.children[total-1].style.display='none';render(false);
+ $('#mv').textContent=0;$('#tm').textContent='00:00';
+ clearInterval(timer);timer=setInterval(()=>{if(st&&!st.paused&&!busy){st.secs++;$('#tm').textContent=fmt(st.secs)}},1000)}
+function render(){const b=$('#board'),s=100/N;
+ st.a.forEach((id,pos)=>{const t=b.children[id];t.style.left=0;t.style.top=0;
+  t.style.transform=`translate(${(pos%N)*100}%,${(pos/N|0)*100}%)`})}
+function tap(id){
+ if(busy||st.paused)return;const total=N*N,e=st.a.indexOf(total-1),p=st.a.indexOf(id);
+ const er=e/N|0,ec=e%N,pr=p/N|0,pc=p%N;if(er!==pr&&ec!==pc)return;
+ // slide a whole row/column toward the empty box
+ const step=er===pr?(pc<ec?1:-1):(pr<er?N:-N),line=[];
+ for(let q=e;q!==p;q-=step)line.push(q);line.push(p);
+ for(let i=0;i<line.length-1;i++)st.a[line[i]]=st.a[line[i+1]];st.a[p]=total-1;
+ st.moves+=Math.abs(p-e)/(er===pr?1:N);$('#mv').textContent=st.moves;render();
+ if(st.a.every((v,i)=>v===i))finish()}
+function finish(){
+ busy=true;clearInterval(timer);const b=$('#board');b.classList.add('won');b.children[N*N-1].style.display='block';
+ const key='best'+N,best=+localStorage.getItem(key)||0;if(!best||st.moves<best)localStorage.setItem(key,st.moves);
+ const stars=st.moves<=N*N*3?3:st.moves<=N*N*6?2:1;
+ setTimeout(()=>{$('#stars').textContent='★'.repeat(stars)+'☆'.repeat(3-stars);
+  $('#wMv').textContent=st.moves;$('#wTm').textContent=fmt(st.secs);$('#wBest').textContent=localStorage.getItem(key);
+  drawTiles($('#winBoard'),picURL,N,[...Array(N*N).keys()]);show('win')},500)}
+
+$('#bShuf').onclick=newRound;
+$('#thumb').onclick=()=>{st.paused=true;$('#prevO').classList.add('on')};
+$('#prevO').onclick=()=>{$('#prevO').classList.remove('on');st.paused=false};
+$('#bPause').onclick=()=>{st.paused=true;$('#pauseO').classList.add('on')};
+$('#bResume').onclick=()=>{st.paused=false;$('#pauseO').classList.remove('on')};
+const home=()=>{clearInterval(timer);show('home')};
+$('#bHome').onclick=home;$('#bHome2').onclick=home;
+$('#bAgain').onclick=startGame;$('#bNew').onclick=home;
+</script>
+</body>
+</html>

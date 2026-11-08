@@ -5,48 +5,50 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <title>Photo Slide Puzzle</title>
 <style>
-:root{--ink:#1b1260;--gold:#ffc928;--font:"Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+:root{--u:min(1vw,.5vh);--ink:#1b1260;--gold:#ffc928;--font:"Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+img,canvas{-webkit-user-drag:none;pointer-events:auto}
 html,body{margin:0;height:100%;overflow:hidden;font-family:var(--font);font-weight:800}
 body{background:linear-gradient(160deg,#a21cf0 0%,#5b4cf0 45%,#12a8ff 100%);color:#fff}
-.screen{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;gap:2.2vh;padding:calc(env(safe-area-inset-top) + 2vh) 5vw calc(env(safe-area-inset-bottom) + 2vh)}
+.screen{position:absolute;inset:0;overflow-y:auto;display:none;flex-direction:column;align-items:center;gap:2.2vh;padding:calc(env(safe-area-inset-top) + 2vh) calc(5*var(--u)) calc(env(safe-area-inset-bottom) + 2vh)}
 .screen.on{display:flex}
-h1{margin:0;font-size:9vw;line-height:1;text-align:center;color:var(--gold);text-shadow:0 .6vw 0 #3a1a8a,0 0 2vw #3a1a8a}
-h1 small{display:block;color:#fff;font-size:7vw}
-.btn{width:100%;max-width:480px;border:0;border-radius:99px;padding:2.2vh 4vw;font:inherit;font-size:5.4vw;color:#fff;
- display:flex;align-items:center;justify-content:center;gap:3vw;cursor:pointer;
+h1{margin:0;font-size:calc(9*var(--u));line-height:1;text-align:center;color:var(--gold);text-shadow:0 .calc(6*var(--u)) 0 #3a1a8a,0 0 calc(2*var(--u)) #3a1a8a}
+h1 small{display:block;color:#fff;font-size:calc(7*var(--u))}
+.btn{width:100%;max-width:480px;border:0;border-radius:99px;padding:2.2vh calc(4*var(--u));font:inherit;font-size:calc(5.4*var(--u));color:#fff;
+ display:flex;align-items:center;justify-content:center;gap:calc(3*var(--u));cursor:pointer;
  background:linear-gradient(#7be34b,#1fae2a);box-shadow:inset 0 .6vh 0 rgba(255,255,255,.45),0 .8vh 0 #137a1b,0 1.6vh 2.4vh rgba(0,0,0,.3);text-shadow:0 .3vh 0 rgba(0,0,0,.3)}
 .btn:active{transform:translateY(.6vh)}
 .btn.or{background:linear-gradient(#ffc044,#f58a00);color:var(--ink);box-shadow:inset 0 .6vh 0 rgba(255,255,255,.5),0 .8vh 0 #b35f00,0 1.6vh 2.4vh rgba(0,0,0,.3);text-shadow:none}
 .btn.pu{background:linear-gradient(#c15cff,#7a1fd0);box-shadow:inset 0 .6vh 0 rgba(255,255,255,.4),0 .8vh 0 #50128f,0 1.6vh 2.4vh rgba(0,0,0,.3)}
 .btn.bl{background:linear-gradient(#4db4ff,#1c5fe0);box-shadow:inset 0 .6vh 0 rgba(255,255,255,.4),0 .8vh 0 #123f9e,0 1.6vh 2.4vh rgba(0,0,0,.3)}
-.btn svg{width:7vw;height:7vw;flex:none}
-.chips{display:flex;gap:3vw;width:100%;max-width:480px}
-.chip{flex:1;border:.5vw solid #8d6bff;border-radius:99px;background:#e9e8ff;color:var(--ink);font:inherit;font-size:5vw;padding:1.2vh 0;line-height:1.1;cursor:pointer;box-shadow:0 .7vh 0 #6a56c8}
-.chip small{display:block;font-size:3.6vw}
+.btn svg{width:calc(7*var(--u));height:calc(7*var(--u));flex:none}
+.chips{display:flex;gap:calc(3*var(--u));width:100%;max-width:480px}
+.chip{flex:1;border:.calc(5*var(--u)) solid #8d6bff;border-radius:99px;background:#e9e8ff;color:var(--ink);font:inherit;font-size:calc(5*var(--u));padding:1.2vh 0;line-height:1.1;cursor:pointer;box-shadow:0 .7vh 0 #6a56c8}
+.chip small{display:block;font-size:calc(3.6*var(--u))}
 .chip.sel{background:linear-gradient(#ffe066,#ffb300);border-color:#ffb300;box-shadow:0 .7vh 0 #b27a00}
-.card{background:#fff;border-radius:5vw;padding:1.6vw;box-shadow:0 1.4vh 3vh rgba(30,10,100,.45)}
-.board{touch-action:none;position:relative;width:min(88vw,52vh);aspect-ratio:1;border-radius:3vw;background:#1c1b5e;overflow:hidden}
+.card{background:#fff;border-radius:calc(5*var(--u));padding:calc(1.6*var(--u));box-shadow:0 1.4vh 3vh rgba(30,10,100,.45)}
+.board{touch-action:none;position:relative;width:min(calc(88*var(--u)),52vh);aspect-ratio:1;border-radius:calc(3*var(--u));background:#1c1b5e;overflow:hidden}
 .tile{position:absolute;background-repeat:no-repeat;transition:transform .16s ease;cursor:pointer}
-.bar{display:flex;width:100%;max-width:480px;gap:3vw;align-items:center}
-.pill{flex:1;background:rgba(40,10,110,.65);border-radius:99px;padding:1vh 4vw;display:flex;flex-direction:column;font-size:3.6vw;line-height:1.15}
-.pill b{color:var(--gold);font-size:6.4vw}
-.round{width:13vw;height:13vw;border-radius:50%;border:0;background:linear-gradient(#4db4ff,#1c5fe0);box-shadow:0 .7vh 0 #123f9e;display:flex;align-items:center;justify-content:center;color:#fff;font-size:6vw;font:inherit;cursor:pointer}
-.thumb{cursor:pointer;width:26vw;height:26vw;border-radius:3vw;border:.8vw solid #fff;background-size:cover;box-shadow:0 1vh 2vh rgba(0,0,0,.35)}
-.row{display:flex;gap:3vw;width:100%;max-width:480px;margin-top:auto}
-.row .btn{font-size:4.6vw;flex-direction:column;gap:.4vh;padding:1.6vh 1vw}
-.crop{position:relative;width:min(90vw,56vh);height:min(90vw,56vh);display:flex;align-items:center;justify-content:center;touch-action:none}
+.bar{position:relative;z-index:10;display:flex;width:100%;max-width:480px;gap:calc(3*var(--u));align-items:center}
+.pill{flex:1;background:rgba(40,10,110,.65);border-radius:99px;padding:1vh calc(4*var(--u));display:flex;flex-direction:column;font-size:calc(3.6*var(--u));line-height:1.15}
+.pill b{color:var(--gold);font-size:calc(6.4*var(--u))}
+.round{width:calc(13*var(--u));height:calc(13*var(--u));border-radius:50%;border:0;background:linear-gradient(#4db4ff,#1c5fe0);box-shadow:0 .7vh 0 #123f9e;display:flex;align-items:center;justify-content:center;color:#fff;font-size:calc(6*var(--u));font:inherit;cursor:pointer}
+.round.gn{background:linear-gradient(#7be34b,#1fae2a);box-shadow:inset 0 .4vh 0 rgba(255,255,255,.45),0 .7vh 0 #137a1b;font-size:calc(7*var(--u))}
+.thumb{cursor:pointer;width:calc(26*var(--u));height:calc(26*var(--u));border-radius:calc(3*var(--u));border:.calc(8*var(--u)) solid #fff;background-size:cover;box-shadow:0 1vh 2vh rgba(0,0,0,.35)}
+.row{display:flex;gap:calc(3*var(--u));width:100%;max-width:480px;margin-top:auto}
+.row .btn{font-size:calc(4.6*var(--u));flex-direction:column;gap:.4vh;padding:1.6vh calc(1*var(--u))}
+.crop{position:relative;width:min(calc(90*var(--u)),56vh);height:min(calc(90*var(--u)),56vh);display:flex;align-items:center;justify-content:center;touch-action:none}
 .crop canvas{max-width:100%;max-height:100%;display:block}
-#frame{position:absolute;border:.8vw solid #fff;box-shadow:0 0 0 100vmax rgba(20,0,80,.45);touch-action:none;
+#frame{position:absolute;border:.calc(8*var(--u)) solid #fff;box-shadow:0 0 0 100vmax rgba(20,0,80,.45);touch-action:none;
  background:linear-gradient(#fff9 1px,#0000 1px) 0 0/33.333% 33.333%,linear-gradient(90deg,#fff9 1px,#0000 1px) 0 0/33.333% 33.333%}
-#frame i{position:absolute;width:9vw;height:9vw;border-radius:50%;background:#1a8cff;border:.9vw solid #fff;touch-action:none}
-.sub{font-size:4.4vw;text-align:center;margin:0}.sub small{display:block;color:#d8ccff;font-size:3.6vw}
-.stars{font-size:15vw;color:var(--gold);text-shadow:0 .8vh 0 #b27a00;letter-spacing:1vw}
-.stats{width:100%;max-width:480px;display:flex;background:#fff3d6;border-radius:5vw;padding:1.4vh 0;color:var(--ink);text-align:center;font-size:3.8vw;box-shadow:0 .8vh 0 #d2a24a}
-.stats div{flex:1}.stats b{display:block;font-size:8vw}
+#frame i{position:absolute;width:calc(9*var(--u));height:calc(9*var(--u));border-radius:50%;background:#1a8cff;border:.calc(9*var(--u)) solid #fff;touch-action:none}
+.sub{position:relative;z-index:10;font-size:calc(4.4*var(--u));text-align:center;margin:0}.sub small{display:block;color:#d8ccff;font-size:calc(3.6*var(--u))}
+.stars{font-size:calc(15*var(--u));color:var(--gold);text-shadow:0 .8vh 0 #b27a00;letter-spacing:calc(1*var(--u))}
+.stats{width:100%;max-width:480px;display:flex;background:#fff3d6;border-radius:calc(5*var(--u));padding:1.4vh 0;color:var(--ink);text-align:center;font-size:calc(3.8*var(--u));box-shadow:0 .8vh 0 #d2a24a}
+.stats div{flex:1}.stats b{display:block;font-size:calc(8*var(--u))}
 .overlay{position:absolute;inset:0;background:rgba(20,0,80,.85);display:none;flex-direction:column;align-items:center;justify-content:center;gap:3vh;z-index:5}
 .overlay.on{display:flex}
-.prev{width:min(88vw,60vh);aspect-ratio:1;background-size:cover;border-radius:3vw;border:1vw solid #fff}
+.prev{width:min(calc(88*var(--u)),60vh);aspect-ratio:1;background-size:cover;border-radius:calc(3*var(--u));border:calc(1*var(--u)) solid #fff}
 </style>
 </head>
 <body>
@@ -54,7 +56,7 @@ h1 small{display:block;color:#fff;font-size:7vw}
 <!-- HOME -->
 <section id="home" class="screen on">
  <h1>Photo<small>Slide Puzzle</small></h1>
- <div class="card"><div class="board" id="homeBoard" style="width:min(72vw,36vh)"></div></div>
+ <div class="card"><div class="board" id="homeBoard" style="width:min(calc(72*var(--u)),36vh)"></div></div>
  <button class="btn or" id="bGallery"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="M4 18l5-5 4 4 3-3 4 4"/></svg>Upload from Gallery</button>
  <button class="btn" id="bCamera"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.6"/></svg>Take a Photo</button>
  <button class="btn pu" id="bSample"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4l13 8-13 8z"/></svg>Play Sample Photo</button>
@@ -69,9 +71,9 @@ h1 small{display:block;color:#fff;font-size:7vw}
 
 <!-- CROP -->
 <section id="cropS" class="screen">
- <div class="bar"><button class="round" id="cBack" aria-label="Back">&#8592;</button><h1 style="font-size:7vw;flex:1;color:#fff;text-shadow:none">Select <span style="color:var(--gold)">Photo Area</span></h1><button class="round" id="bTick" aria-label="Crop" style="background:linear-gradient(#7be34b,#1fae2a);box-shadow:0 .7vh 0 #137a1b">&#10003;</button></div>
+ <div class="bar"><button class="round" id="cBack" aria-label="Back">&#8592;</button><h1 style="font-size:calc(7*var(--u));flex:1;color:#fff;text-shadow:none">Select <span style="color:var(--gold)">Photo Area</span></h1><button class="round gn" id="bTick" aria-label="Crop">&#10003;</button></div>
  <p class="sub" id="cropHint">Drag the square to move it, drag a corner to resize<small>Tap &#10003; when the area looks right</small></p>
- <div class="crop" id="cropBox"><canvas id="cropCv"></canvas><div id="cropRes" class="prev" style="display:none"></div><div id="frame"><i style="left:-5vw;top:-5vw"></i><i style="right:-5vw;top:-5vw"></i><i style="left:-5vw;bottom:-5vw"></i><i style="right:-5vw;bottom:-5vw"></i></div></div>
+ <div class="crop" id="cropBox"><canvas id="cropCv"></canvas><div id="cropRes" class="prev" style="display:none"></div><div id="frame"><i style="left:-calc(5*var(--u));top:-calc(5*var(--u))"></i><i style="right:-calc(5*var(--u));top:-calc(5*var(--u))"></i><i style="left:-calc(5*var(--u));bottom:-calc(5*var(--u))"></i><i style="right:-calc(5*var(--u));bottom:-calc(5*var(--u))"></i></div></div>
  <div id="step2" style="display:none;margin-top:auto;width:100%;max-width:480px;flex-direction:column;gap:2.2vh;align-items:center">
   <div class="chips" data-chips>
    <button class="chip sel" data-n="3">Easy</button><button class="chip" data-n="4">Normal</button><button class="chip" data-n="5">Hard</button>
@@ -93,22 +95,23 @@ h1 small{display:block;color:#fff;font-size:7vw}
   <button class="btn bl" id="bHome">&#8962;<span>Home</span></button>
   <button class="btn" id="bShuf">&#128256;<span>Shuffle</span></button>
  </div>
- <div class="overlay" id="pauseO"><h1>Paused</h1><button class="btn" id="bResume" style="width:70vw">Resume</button></div>
+ <div class="overlay" id="pauseO"><h1>Paused</h1><button class="btn" id="bResume" style="width:calc(70*var(--u))">Resume</button></div>
  <div class="overlay" id="prevO"><div class="prev" id="prevImg"></div><p class="sub">Tap anywhere to close</p></div>
 </section>
 
 <!-- WIN -->
 <section id="win" class="screen">
  <div class="stars" id="stars"></div>
- <h1>Puzzle<small style="font-size:9vw;color:var(--gold)">Solved!</small></h1>
- <div class="card" style="box-shadow:0 0 5vh #ffd54a"><div class="board won" id="winBoard" style="width:min(72vw,34vh)"></div></div>
+ <h1>Puzzle<small style="font-size:calc(9*var(--u));color:var(--gold)">Solved!</small></h1>
+ <div class="card" style="box-shadow:0 0 5vh #ffd54a"><div class="board won" id="winBoard" style="width:min(calc(62*var(--u)),30vh)"></div></div>
  <div class="stats"><div>Moves<b id="wMv">0</b></div><div>Time<b id="wTm">0</b></div><div>Best<b id="wBest">0</b></div></div>
  <button class="btn" id="bAgain">&#10227; Play Again</button>
- <button class="btn bl" id="bNew">New Photo</button>
- <button class="btn pu" id="bHome2">Home</button>
+ <div class="chips"><button class="btn bl" id="bNew" style="font-size:calc(4.6*var(--u))">New Photo</button><button class="btn pu" id="bHome2" style="font-size:calc(4.6*var(--u))">Home</button></div>
 </section>
 
 <script>
+document.addEventListener('contextmenu',e=>e.preventDefault());
+document.addEventListener('selectstart',e=>e.preventDefault());
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 let N=3, img=null, picURL='', st=null, timer=null, busy=false;
 const show=id=>{$$('.screen').forEach(s=>s.classList.toggle('on',s.id===id))};
